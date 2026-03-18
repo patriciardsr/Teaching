@@ -1,0 +1,245 @@
+---
+title: "Analysis examples"
+author: "PRdSR"
+format:
+  revealjs:
+    theme: moon
+    slide-number: true
+    code-overflow: wrap
+    transition: fade
+    progress: true
+    chalkboard: true
+    highlight-style: github
+    footer: "Analysis examples | PRdSR"
+editor: visual
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+# Analysis examples/essentials
+
+Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
+
+Here I'll add some examples/essentials for analysis in R.
+
+# PCA
+
+Principal Component Analysis (PCA) is used to:
+
+\- Reduce dimensionality
+
+\- Explore structure in data
+
+\- Identify patterns (e.g. batch effects, groups)
+
+## Load the library
+
+```{r}
+library(stats)
+```
+
+## Example data {.smaller .scrollable}
+
+```{r}
+data("iris")
+
+# Create extra metadata
+set.seed(123)
+
+iris$Group <- sample(c("Case", "Control"), nrow(iris), replace = TRUE)
+iris$Batch <- sample(c("Batch1", "Batch2", "Batch3"), nrow(iris), replace = TRUE)
+iris$Age <- round(rnorm(nrow(iris), mean = 70, sd = 10))
+
+str(iris)
+```
+
+# Perform PCA using prcomp {.smaller}
+
+```{r}
+# PCA needs only numeric columns, so we subset those
+pca_input <- iris[, c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")]
+
+pca_result <- prcomp(pca_input, scale. = TRUE)
+
+summary(pca_result)
+```
+
+# Visualize the PCA
+
+## Load visualisation packages
+
+```{r}
+library(ggplot2)
+library(patchwork)
+```
+
+## Add metadata back to the PCA results {.smaller}
+
+```{r}
+pca_df <- as.data.frame(pca_result$x)
+
+# Add metadata back
+pca_df$Species <- iris$Species
+pca_df$Group <- iris$Group
+pca_df$Batch <- iris$Batch
+pca_df$Age <- iris$Age
+```
+
+::: callout-important
+Metadata must match the same samples used in the PCA. If these don’t match after filtering or NA handling, the colours will break.
+:::
+
+```{r}
+nrow(pca_input)
+nrow(pca_df)
+nrow(iris)
+```
+
+# Example: Effect of missing values on sample alignment {.smaller}
+
+```{r}
+# Introduce some missing values
+pca_input_na <- pca_input
+pca_input_na[1:10, 1] <- NA
+
+# Remove rows with NA
+clean_data <- na.omit(pca_input_na)
+
+nrow(pca_input_na)
+nrow(clean_data)
+```
+
+::: callout-note
+If rows are removed from the PCA input, the metadata must be filtered in the same way before colouring the PCA plot.
+:::
+
+# Create a PCA plot
+
+```{r}
+ggplot(pca_df, aes(PC1, PC2, colour = Species)) +
+  geom_point(size = 2) +
+  labs(
+    title = "PCA plot coloured by Species",
+    x = "PC1",
+    y = "PC2"
+  ) +
+  theme_minimal()
+```
+
+# Create PCA plots for different covariates {.smaller}
+
+```{r}
+p1 <- ggplot(pca_df, aes(PC1, PC2, colour = Group)) +
+  geom_point(size = 2) +
+  labs(title = "Group", x = "PC1", y = "PC2") +
+  theme_minimal()
+
+p2 <- ggplot(pca_df, aes(PC1, PC2, colour = Batch)) +
+  geom_point(size = 2) +
+  labs(title = "Batch", x = "PC1", y = "PC2") +
+  theme_minimal()
+
+p3 <- ggplot(pca_df, aes(PC1, PC2, colour = Species)) +
+  geom_point(size = 2) +
+  labs(title = "Species", x = "PC1", y = "PC2") +
+  theme_minimal()
+
+p4 <- ggplot(pca_df, aes(PC1, PC2, colour = Age)) +
+  geom_point(size = 2) +
+  labs(title = "Age", x = "PC1", y = "PC2") +
+  theme_minimal()
+
+p1 + p2 + p3 + p4
+```
+
+# Scree plot
+
+## Prepare data for visualisation {.smaller}
+
+```{r}
+scree_pca_input <- data.frame(
+  Component = 1:length(pca_result$sdev),
+  Variance = pca_result$sdev^2 / sum(pca_result$sdev^2)
+)
+
+scree_pca_input
+```
+
+## Create the scree plot
+
+```{r}
+ggplot(scree_pca_input, aes(x = Component, y = Variance)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Scree plot",
+    x = "Principal Components",
+    y = "Proportion of Variance Explained"
+  ) +
+  theme_minimal()
+```
+
+# Key takeaways
+
+:::: callout-tip
+::: incremental
+-   PCA uses numeric data only
+-   Missing values must be handled before PCA
+-   Metadata must match the same samples used in PCA
+-   Start simple, then build complexity
+:::
+::::
+
+# Optional extras
+
+## PCA plot (scores) using plotly
+
+<https://plotly.com/ggplot2/pca-visualization/>
+
+```{r}
+library(plotly)
+library(ggfortify)
+
+p <- autoplot(pca_result, data = iris, colour = "Species")
+
+ggplotly(p)
+```
+
+## PCA plot (loadings) using plotly
+
+```{r}
+p <- autoplot(pca_result, data = iris, colour = "Species", loadings = TRUE)
+
+ggplotly(p)
+```
+
+# Setting up the environment
+
+When loading `pca_input` there are several options depending on the type of file you are loading, for example `.csv`, `.xlsx`, or `.tsv`.
+
+## here
+
+One package that can be very useful when setting up an analysis is the `here` package (<https://here.r-lib.org/>). This package enables easy file referencing.
+
+## Installation
+
+```{r}
+# install.packages("here")
+```
+
+## Loading library
+
+```{r}
+library(here)
+```
+
+## Usage
+
+```{r}
+here::i_am("analysis_examples.qmd")
+
+here()
+```
