@@ -80,6 +80,10 @@ pca_input <- iris[, c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Widt
 
 pca_result <- prcomp(pca_input, scale. = TRUE)
 
+variance_explained <- summary(pca_result)$importance[2, ] * 100
+pc1_label <- sprintf("PC1 (%.1f%%)", variance_explained[1])
+pc2_label <- sprintf("PC2 (%.1f%%)", variance_explained[2])
+
 summary(pca_result)
 ```
 
@@ -95,13 +99,18 @@ library(patchwork)
 ## Set up a presentation theme
 
 ```{r}
-pca_plot_theme <- theme_minimal(base_size = 16) +
+pca_plot_theme <- theme_classic(base_size = 16) +
   theme(
-    plot.title = element_text(face = "bold", size = 18),
-    axis.title = element_text(face = "bold"),
+    plot.title = element_text(face = "bold", size = 18, hjust = 0.5),
+    axis.title = element_text(face = "bold", size = 14),
+    axis.text = element_text(size = 12, colour = "black"),
     legend.title = element_text(face = "bold"),
+    legend.text = element_text(size = 11),
     legend.position = "right",
-    panel.grid.minor = element_blank()
+    panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.6),
+    plot.background = element_rect(fill = "white", colour = NA),
+    panel.background = element_rect(fill = "white", colour = NA),
+    axis.line = element_blank()
   )
 ```
 
@@ -152,8 +161,8 @@ ggplot(pca_df, aes(PC1, PC2, colour = Species)) +
   geom_point(size = 3, alpha = 0.85) +
   labs(
     title = "PCA plot coloured by Species",
-    x = "PC1 score",
-    y = "PC2 score",
+    x = pc1_label,
+    y = pc2_label,
     colour = "Species"
   ) +
   pca_plot_theme
@@ -169,8 +178,8 @@ ggplot(pca_df, aes(PC1, PC2, colour = Species)) +
   geom_point(size = 3, alpha = 0.85) +
   labs(
     title = "PCA plot coloured by Species",
-    x = "PC1 score",
-    y = "PC2 score",
+    x = pc1_label,
+    y = pc2_label,
     colour = "Species"
   ) +
   pca_plot_theme
@@ -182,22 +191,22 @@ ggplot(pca_df, aes(PC1, PC2, colour = Species)) +
 #| include: false
 p1 <- ggplot(pca_df, aes(PC1, PC2, colour = Group)) +
   geom_point(size = 2.4, alpha = 0.85) +
-  labs(title = "Group", x = "PC1 score", y = "PC2 score", colour = "Group") +
+  labs(title = "Group", x = pc1_label, y = pc2_label, colour = "Group") +
   pca_plot_theme
 
 p2 <- ggplot(pca_df, aes(PC1, PC2, colour = Batch)) +
   geom_point(size = 2.4, alpha = 0.85) +
-  labs(title = "Batch", x = "PC1 score", y = "PC2 score", colour = "Batch") +
+  labs(title = "Batch", x = pc1_label, y = pc2_label, colour = "Batch") +
   pca_plot_theme
 
 p3 <- ggplot(pca_df, aes(PC1, PC2, colour = Species)) +
   geom_point(size = 2.4, alpha = 0.85) +
-  labs(title = "Species", x = "PC1 score", y = "PC2 score", colour = "Species") +
+  labs(title = "Species", x = pc1_label, y = pc2_label, colour = "Species") +
   pca_plot_theme
 
 p4 <- ggplot(pca_df, aes(PC1, PC2, colour = Age)) +
   geom_point(size = 2.4, alpha = 0.85) +
-  labs(title = "Age", x = "PC1 score", y = "PC2 score", colour = "Age") +
+  labs(title = "Age", x = pc1_label, y = pc2_label, colour = "Age") +
   pca_plot_theme
 
 p1 + p2 + p3 + p4
@@ -210,22 +219,22 @@ p1 + p2 + p3 + p4
 #| eval: false
 p1 <- ggplot(pca_df, aes(PC1, PC2, colour = Group)) +
   geom_point(size = 2.4, alpha = 0.85) +
-  labs(title = "Group", x = "PC1 score", y = "PC2 score", colour = "Group") +
+  labs(title = "Group", x = pc1_label, y = pc2_label, colour = "Group") +
   pca_plot_theme
 
 p2 <- ggplot(pca_df, aes(PC1, PC2, colour = Batch)) +
   geom_point(size = 2.4, alpha = 0.85) +
-  labs(title = "Batch", x = "PC1 score", y = "PC2 score", colour = "Batch") +
+  labs(title = "Batch", x = pc1_label, y = pc2_label, colour = "Batch") +
   pca_plot_theme
 
 p3 <- ggplot(pca_df, aes(PC1, PC2, colour = Species)) +
   geom_point(size = 2.4, alpha = 0.85) +
-  labs(title = "Species", x = "PC1 score", y = "PC2 score", colour = "Species") +
+  labs(title = "Species", x = pc1_label, y = pc2_label, colour = "Species") +
   pca_plot_theme
 
 p4 <- ggplot(pca_df, aes(PC1, PC2, colour = Age)) +
   geom_point(size = 2.4, alpha = 0.85) +
-  labs(title = "Age", x = "PC1 score", y = "PC2 score", colour = "Age") +
+  labs(title = "Age", x = pc1_label, y = pc2_label, colour = "Age") +
   pca_plot_theme
 
 p1 + p2 + p3 + p4
@@ -313,8 +322,8 @@ library(ggfortify)
 p <- autoplot(pca_result, data = iris, colour = "Species") +
   labs(
     title = "Interactive PCA scores plot",
-    x = "PC1 score",
-    y = "PC2 score"
+    x = pc1_label,
+    y = pc2_label
   ) +
   pca_plot_theme
 
@@ -329,8 +338,8 @@ ggplotly(p, width = 950, height = 540) |>
 p <- autoplot(pca_result, data = iris, colour = "Species") +
   labs(
     title = "Interactive PCA scores plot",
-    x = "PC1 score",
-    y = "PC2 score"
+    x = pc1_label,
+    y = pc2_label
   ) +
   pca_plot_theme
 
@@ -344,8 +353,8 @@ ggplotly(p, width = 950, height = 540) |>
 p <- autoplot(pca_result, data = iris, colour = "Species", loadings = TRUE) +
   labs(
     title = "Interactive PCA loadings plot",
-    x = "PC1 score",
-    y = "PC2 score"
+    x = pc1_label,
+    y = pc2_label
   ) +
   pca_plot_theme
 
@@ -360,8 +369,8 @@ ggplotly(p, width = 950, height = 540) |>
 p <- autoplot(pca_result, data = iris, colour = "Species", loadings = TRUE) +
   labs(
     title = "Interactive PCA loadings plot",
-    x = "PC1 score",
-    y = "PC2 score"
+    x = pc1_label,
+    y = pc2_label
   ) +
   pca_plot_theme
 
