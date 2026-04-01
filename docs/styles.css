@@ -1,0 +1,60 @@
+:root {
+  --r-background-color: #f7f5ef;
+  --r-main-color: #1f2933;
+  --r-heading-color: #12344d;
+  --r-link-color: #0f766e;
+  --r-link-color-hover: #0b5d57;
+  --r-selection-background-color: #dbeafe;
+}
+
+.reveal {
+  font-size: 30px;
+}
+
+.reveal .slides {
+  text-align: left;
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3 {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+
+.reveal h1 {
+  border-bottom: 4px solid #0f766e;
+  display: inline-block;
+  padding-bottom: 0.2em;
+}
+
+.reveal p,
+.reveal li {
+  line-height: 1.35;
+}
+
+.reveal pre code {
+  max-height: 520px;
+  font-size: 0.72em;
+}
+
+.reveal .compact-code pre code {
+  font-size: 0.58em;
+}
+
+.reveal .callout {
+  font-size: 0.85em;
+  border-radius: 12px;
+}
+
+.reveal .quarto-figure img,
+.reveal .figure img {
+  max-height: 70vh;
+  object-fit: contain;
+}
+
+.reveal .html-widget {
+  width: 100% !important;
+  height: 540px !important;
+}

@@ -1,9 +1,11 @@
 ---
 title: "Analysis examples"
 author: "PRdSR"
+output-file: index.html
 format:
   revealjs:
-    theme: moon
+    theme: simple
+    css: styles.css
     slide-number: true
     code-overflow: wrap
     transition: fade
@@ -34,7 +36,22 @@ Principal Component Analysis (PCA) is used to:
 
 \- Identify patterns (e.g. batch effects, groups)
 
-## Load the library
+# What PCA is
+
+- PCA converts many correlated variables into a smaller number of new variables called principal components.
+- `PC1` explains the largest amount of variation in the dataset.
+- `PC2` explains the next largest amount of variation, while being independent of `PC1`.
+- This helps us visualise high-dimensional data in two dimensions.
+
+# How to interpret a PCA plot
+
+- Each point represents one sample.
+- The axes show the sample scores on `PC1` and `PC2`.
+- Points close together are more similar; points far apart are more different.
+- Separation by colour can suggest structure such as species, batch effects, or case/control grouping.
+- The scree plot helps decide how much of the total variation the first few components explain.
+
+# Load the library
 
 ```{r}
 library(stats)
@@ -73,6 +90,19 @@ summary(pca_result)
 ```{r}
 library(ggplot2)
 library(patchwork)
+```
+
+## Set up a presentation theme
+
+```{r}
+pca_plot_theme <- theme_minimal(base_size = 16) +
+  theme(
+    plot.title = element_text(face = "bold", size = 18),
+    axis.title = element_text(face = "bold"),
+    legend.title = element_text(face = "bold"),
+    legend.position = "right",
+    panel.grid.minor = element_blank()
+  )
 ```
 
 ## Add metadata back to the PCA results {.smaller}
@@ -115,44 +145,103 @@ nrow(clean_data)
 If rows are removed from the PCA input, the metadata must be filtered in the same way before colouring the PCA plot.
 :::
 
-# Create a PCA plot
+# Create a PCA plot: code {.smaller}
 
 ```{r}
 ggplot(pca_df, aes(PC1, PC2, colour = Species)) +
-  geom_point(size = 2) +
+  geom_point(size = 3, alpha = 0.85) +
   labs(
     title = "PCA plot coloured by Species",
-    x = "PC1",
-    y = "PC2"
+    x = "PC1 score",
+    y = "PC2 score",
+    colour = "Species"
   ) +
-  theme_minimal()
+  pca_plot_theme
 ```
 
-# Create PCA plots for different covariates {.smaller}
+# PCA plot output
 
 ```{r}
+#| echo: false
+#| fig-width: 9
+#| fig-height: 6
+ggplot(pca_df, aes(PC1, PC2, colour = Species)) +
+  geom_point(size = 3, alpha = 0.85) +
+  labs(
+    title = "PCA plot coloured by Species",
+    x = "PC1 score",
+    y = "PC2 score",
+    colour = "Species"
+  ) +
+  pca_plot_theme
+```
+
+# Create PCA plots for different covariates
+
+```{r}
+#| include: false
 p1 <- ggplot(pca_df, aes(PC1, PC2, colour = Group)) +
-  geom_point(size = 2) +
-  labs(title = "Group", x = "PC1", y = "PC2") +
-  theme_minimal()
+  geom_point(size = 2.4, alpha = 0.85) +
+  labs(title = "Group", x = "PC1 score", y = "PC2 score", colour = "Group") +
+  pca_plot_theme
 
 p2 <- ggplot(pca_df, aes(PC1, PC2, colour = Batch)) +
-  geom_point(size = 2) +
-  labs(title = "Batch", x = "PC1", y = "PC2") +
-  theme_minimal()
+  geom_point(size = 2.4, alpha = 0.85) +
+  labs(title = "Batch", x = "PC1 score", y = "PC2 score", colour = "Batch") +
+  pca_plot_theme
 
 p3 <- ggplot(pca_df, aes(PC1, PC2, colour = Species)) +
-  geom_point(size = 2) +
-  labs(title = "Species", x = "PC1", y = "PC2") +
-  theme_minimal()
+  geom_point(size = 2.4, alpha = 0.85) +
+  labs(title = "Species", x = "PC1 score", y = "PC2 score", colour = "Species") +
+  pca_plot_theme
 
 p4 <- ggplot(pca_df, aes(PC1, PC2, colour = Age)) +
-  geom_point(size = 2) +
-  labs(title = "Age", x = "PC1", y = "PC2") +
-  theme_minimal()
+  geom_point(size = 2.4, alpha = 0.85) +
+  labs(title = "Age", x = "PC1 score", y = "PC2 score", colour = "Age") +
+  pca_plot_theme
 
 p1 + p2 + p3 + p4
 ```
+
+::::: columns
+::: {.column width="42%"}
+::: {.compact-code}
+```{r}
+#| eval: false
+p1 <- ggplot(pca_df, aes(PC1, PC2, colour = Group)) +
+  geom_point(size = 2.4, alpha = 0.85) +
+  labs(title = "Group", x = "PC1 score", y = "PC2 score", colour = "Group") +
+  pca_plot_theme
+
+p2 <- ggplot(pca_df, aes(PC1, PC2, colour = Batch)) +
+  geom_point(size = 2.4, alpha = 0.85) +
+  labs(title = "Batch", x = "PC1 score", y = "PC2 score", colour = "Batch") +
+  pca_plot_theme
+
+p3 <- ggplot(pca_df, aes(PC1, PC2, colour = Species)) +
+  geom_point(size = 2.4, alpha = 0.85) +
+  labs(title = "Species", x = "PC1 score", y = "PC2 score", colour = "Species") +
+  pca_plot_theme
+
+p4 <- ggplot(pca_df, aes(PC1, PC2, colour = Age)) +
+  geom_point(size = 2.4, alpha = 0.85) +
+  labs(title = "Age", x = "PC1 score", y = "PC2 score", colour = "Age") +
+  pca_plot_theme
+
+p1 + p2 + p3 + p4
+```
+:::
+:::
+
+::: {.column width="58%"}
+```{r}
+#| echo: false
+#| fig-width: 7.5
+#| fig-height: 6
+p1 + p2 + p3 + p4
+```
+:::
+:::::
 
 # Scree plot
 
@@ -167,7 +256,7 @@ scree_pca_input <- data.frame(
 scree_pca_input
 ```
 
-## Create the scree plot
+## Create the scree plot: code {.smaller}
 
 ```{r}
 ggplot(scree_pca_input, aes(x = Component, y = Variance)) +
@@ -179,7 +268,25 @@ ggplot(scree_pca_input, aes(x = Component, y = Variance)) +
     x = "Principal Components",
     y = "Proportion of Variance Explained"
   ) +
-  theme_minimal()
+  pca_plot_theme
+```
+
+## Scree plot output
+
+```{r}
+#| echo: false
+#| fig-width: 9
+#| fig-height: 6
+ggplot(scree_pca_input, aes(x = Component, y = Variance)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Scree plot",
+    x = "Principal Components",
+    y = "Proportion of Variance Explained"
+  ) +
+  pca_plot_theme
 ```
 
 # Key takeaways
@@ -195,7 +302,7 @@ ggplot(scree_pca_input, aes(x = Component, y = Variance)) +
 
 # Optional extras
 
-## PCA plot (scores) using plotly
+## PCA plot (scores) using plotly: code {.smaller .scrollable}
 
 <https://plotly.com/ggplot2/pca-visualization/>
 
@@ -203,17 +310,63 @@ ggplot(scree_pca_input, aes(x = Component, y = Variance)) +
 library(plotly)
 library(ggfortify)
 
-p <- autoplot(pca_result, data = iris, colour = "Species")
+p <- autoplot(pca_result, data = iris, colour = "Species") +
+  labs(
+    title = "Interactive PCA scores plot",
+    x = "PC1 score",
+    y = "PC2 score"
+  ) +
+  pca_plot_theme
 
-ggplotly(p)
+ggplotly(p, width = 950, height = 540) |>
+  layout(margin = list(l = 70, r = 40, b = 70, t = 70))
 ```
 
-## PCA plot (loadings) using plotly
+## PCA plot (scores) output
 
 ```{r}
-p <- autoplot(pca_result, data = iris, colour = "Species", loadings = TRUE)
+#| echo: false
+p <- autoplot(pca_result, data = iris, colour = "Species") +
+  labs(
+    title = "Interactive PCA scores plot",
+    x = "PC1 score",
+    y = "PC2 score"
+  ) +
+  pca_plot_theme
 
-ggplotly(p)
+ggplotly(p, width = 950, height = 540) |>
+  layout(margin = list(l = 70, r = 40, b = 70, t = 70))
+```
+
+## PCA plot (loadings) using plotly: code {.smaller .scrollable}
+
+```{r}
+p <- autoplot(pca_result, data = iris, colour = "Species", loadings = TRUE) +
+  labs(
+    title = "Interactive PCA loadings plot",
+    x = "PC1 score",
+    y = "PC2 score"
+  ) +
+  pca_plot_theme
+
+ggplotly(p, width = 950, height = 540) |>
+  layout(margin = list(l = 70, r = 40, b = 70, t = 70))
+```
+
+## PCA plot (loadings) output
+
+```{r}
+#| echo: false
+p <- autoplot(pca_result, data = iris, colour = "Species", loadings = TRUE) +
+  labs(
+    title = "Interactive PCA loadings plot",
+    x = "PC1 score",
+    y = "PC2 score"
+  ) +
+  pca_plot_theme
+
+ggplotly(p, width = 950, height = 540) |>
+  layout(margin = list(l = 70, r = 40, b = 70, t = 70))
 ```
 
 # Setting up the environment
